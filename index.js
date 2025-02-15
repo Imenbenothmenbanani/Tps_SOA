@@ -1,20 +1,82 @@
-// Exemple de code pour faire une requête API en utilisant la librairie 'request'
-const request = require("request");
+const express = require('express');
+const db = require('./database');
+const app = express();
+app.use(express.json());
+const PORT = 3000;
+app.get('/', (req, res) => {
+    res.json("Registre de personnes! Choisissez le bon routage!")
+});
 
-const API_KEY = "38f9264b8e345e5059d64b5e08c19663";
-const BASE_URL =
-  "http://api.openweathermap.org/data/2.5/weather?appid=" + API_KEY + "&q=";
+// Récupérer toutes les personnes
+app.get('/personnes', (req, res) => {
+    db.all("SELECT * FROM personnes", [], (err, rows) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "data": rows });
+    });
+});
 
-function getWeatherData(city, callback) {
-  const url = BASE_URL + city;
-  request(url, function (error, response, body) {
-  });
-}
+// Récupérer une personne par ID
+app.get('/personnes/:id', (req, res) => {
+    const id = req.params.id;
+    db.get("SELECT * FROM personnes WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "data": row });
+    });
+});
 
-getWeatherData("Sousse", (error, weatherData) => {
-  if (!error) {
-    console.log("Description: " + weatherData.weather[0].description);
-    console.log("Température: " + weatherData.main.temp + "C");
-    console.log("Humidité: " + weatherData.main.humidity + "%");
-  }
-})
+// Créer une nouvelle personne
+app.post('/personnes/:nom', (req, res) => {
+  
+    const { adresse , nom } = req.body;
+    db.run(`INSERT INTO personnes (nom, adresse) VALUES (?, ?)`, [nom, adresse], function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success", "data": { id: this.lastID } });
+    });
+});
+
+// Mettre à jour une personne
+app.put('/personnes/:id', (req, res) => {
+    const { id } = req.params; 
+    const { nom, adresse } = req.body; // Récupération correcte des données
+
+    if (!nom || !adresse) {
+        return res.status(400).json({ "error": "Nom et adresse sont requis" });
+    }
+
+    db.run(
+        `UPDATE personnes SET nom = ?, adresse = ? WHERE id = ?`,
+        [nom, adresse, id],
+        function(err) {
+            if (err) {
+                return res.status(500).json({ "error": err.message });
+            }
+            if (this.changes === 0) {
+                return res.status(404).json({ "error": "Personne non trouvée" });
+            }
+            res.json({ "message": "Mise à jour réussie", "updatedId": id });
+        }
+    );
+});
+
+// Supprimer une personne
+app.delete('/personnes/:id', (req, res) => {
+    const id = req.params.id;
+    db.run(`DELETE FROM personnes WHERE id = ?`, id, function(err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({ "message": "success" });
+    });
+});
+
+app.listen(PORT, () => { console.log(`Server running on port ${PORT}`); });
