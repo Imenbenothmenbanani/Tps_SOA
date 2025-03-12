@@ -120,9 +120,3 @@ http://localhost:3000/personnes/1
 http://localhost:3000/personnes/1
 ```
 
-## 🛠 Problèmes courants
-| Erreur | Solution |
-|--------|---------|
-| `401 Unauthorized` | Vérifie que le token est bien ajouté dans l'en-tête Authorization. |
-| `403 Forbidden` | Assure-toi que l'utilisateur a les rôles/permissions nécessaires. |
-| `500 Internal Server Error` | Vérifie que Keycloak et le serveur Node.js sont bien lancés. |
