@@ -8,7 +8,7 @@ L'accès aux routes est sécurisé avec **Keycloak**.
 
 ### 📂 1. Cloner le dépôt
 ```sh
-git clone https://github.com/mzmantar/SOA-Microservices.git
+git clone https://github.com/Imenbenothmenbanani/Tps_SOA.git
 cd TP2
 ```
 
